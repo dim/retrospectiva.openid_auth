@@ -1,0 +1,14 @@
+<% plus_form_for @user, :url => account_path, :html => html_options_for_account_form.merge(:id => 'open_id_account_form', :style => nil) do |f| -%>
+  
+  <%= f.error_messages %>
+
+  <% f.fieldset do -%>
+    <%= f.label_tag _('Identity URL') + ':', :for => 'identity_url' -%>
+    <%= text_field_tag :identity_url, params[:identity_url], :size => 40 -%>
+  <% end -%>
+
+  <% f.fieldset do -%>
+    <%= f.submit _('Create') %>
+  <% end -%>
+  
+<% end -%>
