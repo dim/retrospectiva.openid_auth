@@ -11,7 +11,7 @@ class OpenID::IdentityURL < String
       uri.scheme = uri.scheme.downcase  # URI should do this
       new(uri.normalize.to_s.chomp('/'))
     rescue URI::InvalidURIError
-      nil
+      ''
     end
   end
 

@@ -11,7 +11,7 @@ User.class_eval do
     :if => Proc.new { |user| user.identity_url.present? }
   
   def self.open_id_authenticate(identity_url)
-    identity_url.present? ? find_by_identity_url_and_active(identity_url, true) : nil
+    identity_url.present? ? active.find_by_identity_url(identity_url) : nil
   end
   
   protected
