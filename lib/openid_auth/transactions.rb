@@ -13,7 +13,7 @@ module OpenidAuth
 
     def open_id_redirect_url(open_id_request, return_to)
       open_id_request.return_to_args['open_id_complete'] = '1'
-      open_id_request.redirect_url(home_url, return_to)
+      open_id_request.redirect_url(root_url, return_to)
     end    
     
   end   
