@@ -1,3 +1,5 @@
+require 'openid/consumer'
+
 OpenID::OpenIDServiceEndpoint.class_eval do
   
   class << self

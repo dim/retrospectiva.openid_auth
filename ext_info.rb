@@ -2,7 +2,7 @@
 # Copyright (C) 2009 Dimitrij Denissenko
 # Please read LICENSE document for more information.
 #++
-gem 'ruby-openid', '>= 2.2.6'
+gem 'ruby-openid', '>= 2.1.6'
 require 'openid'
 require 'openid/store/filesystem'
 require 'openid/extensions/sreg'
