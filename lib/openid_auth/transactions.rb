@@ -1,9 +1,9 @@
 module OpenidAuth
   module Transactions
+    IGNORE_KEYS = [:format, :user]
 
-    def complete_open_id_transaction
-      params_with_path = params.reject { |key, value| request.path_parameters[key] }
-      params_with_path.delete(:format)
+    def complete_open_id_transaction      
+      params_with_path = params.except(*IGNORE_KEYS).reject { |key, value| request.path_parameters[key] }
       open_id_consumer.complete(params_with_path, request.url)
     end     
 

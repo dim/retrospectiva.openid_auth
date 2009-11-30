@@ -17,11 +17,11 @@ class AccountsController < ApplicationController
   protected
   
     def openid_registration
-      if params[:open_id_complete].nil?
+      if params[:open_id_complete] == '1'
+        complete_open_id_registration
+      else
         identity_url = OpenID::IdentityURL.parse(params[:identity_url])
         begin_open_id_registration(identity_url)
-      else
-        complete_open_id_registration
       end
     end
 
@@ -39,17 +39,22 @@ class AccountsController < ApplicationController
     end
 
     def complete_open_id_registration
-      open_id_response = complete_open_id_transaction      
+      open_id_response = complete_open_id_transaction
       case open_id_response.status
       when OpenID::Consumer::SUCCESS
         purge_expired_accounts
-        @user = User.new :identity_url => OpenID::IdentityURL.parse(open_id_response.identity_url), 
-          :name => params['openid.sreg.fullname'] || params['openid.sreg.nickname']
-        @user.time_zone = params['openid.sreg.timezone'] if params['openid.sreg.timezone'].present?
-        @user.username = params['openid.sreg.nickname']
-        @user.email = params['openid.sreg.email']
-        @user.plain_password = @user.plain_password_confirmation = Digest::SHA1.hexdigest(rand(Time.now.utc.to_i).to_s)
-        if @user.save
+        time_zone = Time.send(:get_zone, params['openid.sreg.timezone'])
+        
+        @user = User.create do |user|
+          user.identity_url = OpenID::IdentityURL.parse(open_id_response.identity_url)
+          user.username = params['openid.sreg.nickname']
+          user.email = params['openid.sreg.email']
+          user.name = params['openid.sreg.fullname'] || user.username          
+          user.time_zone = time_zone.name if time_zone 
+          user.plain_password = user.plain_password_confirmation = ActiveSupport::SecureRandom.hex(20)
+        end
+
+        if @user.errors.empty?
           successful_registration
         else
           failed_registration
@@ -57,7 +62,7 @@ class AccountsController < ApplicationController
       when OpenID::Consumer::CANCEL
         failed_registration _('OpenID authentication was canceled.')
       when OpenID::Consumer::FAILURE
-        failed_registration _('Sorry, the OpenID authentication failed.')
+        failed_registration [_('Sorry, the OpenID authentication failed.'), open_id_response.message]
       when OpenID::Consumer::SETUP_NEEDED
         failed_registration _('Sorry, the OpenID account is not set-up correctly.')
       end
@@ -65,7 +70,8 @@ class AccountsController < ApplicationController
 
     def add_registration_fields(open_id_request)
       sreg_request = OpenID::SReg::Request.new
-      sreg_request.request_fields(['nickname', 'email', 'fullname', 'timezone'], true)
+      sreg_request.request_fields(['nickname', 'email', 'fullname'], true)
+      sreg_request.request_fields(['timezone'], false)
       open_id_request.add_extension(sreg_request)
     end
 end
